@@ -450,7 +450,7 @@ func (l *List) Since(t time.Time) ([]*Task, error) {
 					// Unparseable. Terminate here.
 					break
 				}
-				if parsed.After(t) {
+				if parsed.Local().After(t) {
 					sawNewer = true
 				}
 			}
