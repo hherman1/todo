@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -144,6 +145,34 @@ func openSearch(l *task.List, query string) {
 	})
 }
 
+func openSince(dir string, l []*task.Task) {
+	var err error
+	win, err := acme.New()
+	if err != nil {
+		log.Printf("creating acme window: %v", err)
+		time.Sleep(10 * time.Millisecond)
+		win, err = acme.New()
+		if err != nil {
+			log.Fatalf("creating acme window again: %v", err)
+		}
+	}
+	win.SetErrorPrefix(dir)
+	win.Name(dir + "since")
+	win.Ctl("cleartag")
+	slices.SortFunc(l, func(a, b *task.Task) int {
+		return strings.Compare(a.Title(), b.Title())
+	})
+	go func() {
+		win.Clear()
+		var buf bytes.Buffer
+		for _, t := range l {
+			buf.WriteString("\n\n##############\n")
+			t.PrintTo(&buf)
+		}
+		win.Write("body", buf.Bytes())
+	}()
+}
+
 func (w *awin) Execute(line string) bool {
 	// Exec* methods handle all our comments.
 	return false
@@ -159,6 +188,25 @@ func (w *awin) ExecSearch(arg string) {
 		return
 	}
 	openSearch(w.list(), arg)
+}
+
+func (w *awin) ExecSince(arg string) {
+	if arg == "" {
+		w.acme.Err("Since needs an argument")
+		return
+	}
+	duration, err := time.ParseDuration(arg)
+	if err != nil {
+		w.acme.Err(fmt.Sprintf("Since needs a valid duration: %v", err))
+		return
+	}
+	list := w.list()
+	since, err := list.Since(time.Now().Add(-1 * duration))
+	if err != nil {
+		w.acme.Err(fmt.Sprintf("Since: %v", err))
+		return
+	}
+	openSince(adir(list), since)
 }
 
 func (w *awin) ExecGet() (err error) {
