@@ -165,8 +165,13 @@ func openSince(dir string, l []*task.Task) {
 	go func() {
 		win.Clear()
 		var buf bytes.Buffer
+		first := true
 		for _, t := range l {
-			buf.WriteString("\n\n##############\n")
+			if !first {
+				buf.WriteString("\n\n")
+			}
+			first = false
+			buf.WriteString("##############\n")
 			t.PrintTo(&buf)
 		}
 		win.Write("body", buf.Bytes())
