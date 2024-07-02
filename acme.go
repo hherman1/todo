@@ -170,6 +170,10 @@ func openSince(dir string, l []*task.Task) {
 			t.PrintTo(&buf)
 		}
 		win.Write("body", buf.Bytes())
+		win.Ctl("clean")
+		win.Addr("0")
+		win.Ctl("dot=addr")
+		win.Ctl("show")
 	}()
 }
 
