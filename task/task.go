@@ -445,12 +445,12 @@ func (l *List) Since(t time.Time) ([]*Task, error) {
 		for _, line := range bytes.Split(dupe.body, nl) {
 			if isMarker(line) {
 				ts := strings.TrimSpace(string(line[len(emSpace) : len(line)-len(emSpace)]))
-				parsed, err := time.Parse("2006-01-02 15:04:05", ts)
+				parsed, err := time.ParseInLocation("2006-01-02 15:04:05", ts, time.Local)
 				if err != nil {
 					// Unparseable. Terminate here.
 					break
 				}
-				if parsed.Local().After(t) {
+				if parsed.After(t) {
 					sawNewer = true
 				}
 			}
