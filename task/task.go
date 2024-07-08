@@ -463,6 +463,7 @@ func (l *List) Since(t time.Time) ([]*Task, error) {
 		if !sawNewer {
 			continue
 		}
+		dupe.body = body.Bytes()
 		tasks = append(tasks, &dupe)
 	}
 	return tasks, nil
